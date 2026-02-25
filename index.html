@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AV4 Map Table — Prototype Launcher</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0d0c;
+      --surface: #1c1713;
+      --border: #3a2f22;
+      --text: #e8ddd0;
+      --dim: #5a4f42;
+      --traders: #C8923A;
+      --women: #C47A6B;
+      --locations: #5B8FA8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      padding: 40px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: center;
+    }
+
+    h1 {
+      font-family: Georgia, serif;
+      font-size: clamp(20px, 3vw, 36px);
+      text-align: center;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    h1 em {
+      font-style: italic;
+      color: #9e8e7a;
+    }
+
+    .rule {
+      width: 48px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .desc {
+      font-size: 14px;
+      color: #9e8e7a;
+      text-align: center;
+      max-width: 500px;
+      line-height: 1.7;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 24px 32px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 180px;
+    }
+
+    .btn:hover {
+      border-color: currentColor;
+      background: #201a12;
+    }
+
+    .btn .btn-icon {
+      font-size: 28px;
+    }
+
+    .btn .btn-label {
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .btn .btn-sub {
+      font-size: 11px;
+      color: var(--dim);
+    }
+
+    .btn-table { color: var(--traders); }
+    .btn-wall  { color: var(--locations); }
+    .btn-both  { color: #9e8e7a; }
+
+    .note {
+      font-size: 11px;
+      color: var(--dim);
+      text-align: center;
+      max-width: 460px;
+      line-height: 1.6;
+    }
+
+    .note strong { color: #9e8e7a; }
+
+    .cat-dots {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .cat-dot-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="eyebrow">D2 · RiggsWard · Shockoe Bottom Exhibit</div>
+
+  <h1>AV4 Map Table<br><em>Interactive Prototype</em></h1>
+
+  <div class="rule"></div>
+
+  <p class="desc">
+    A two-screen interactive experience. The <strong>table screen</strong> is the visitor's
+    touch control; the <strong>wall screen</strong> displays expanded story content.
+    Open both in separate windows for the full prototype experience.
+  </p>
+
+  <div class="cat-dots">
+    <div class="cat-dot-item">
+      <div class="dot" style="background:var(--traders)"></div>
+      Traders &amp; Businesses
+    </div>
+    <div class="cat-dot-item">
+      <div class="dot" style="background:var(--women)"></div>
+      Enslaved Women
+    </div>
+    <div class="cat-dot-item">
+      <div class="dot" style="background:var(--locations)"></div>
+      Locations
+    </div>
+  </div>
+
+  <div class="buttons">
+    <a class="btn btn-table" href="table.html" target="_blank">
+      <span class="btn-icon">🖱</span>
+      <span class="btn-label">Table Screen</span>
+      <span class="btn-sub">24–32" Touch Control</span>
+    </a>
+    <a class="btn btn-wall" href="wall.html" target="_blank">
+      <span class="btn-icon">📺</span>
+      <span class="btn-label">Wall Display</span>
+      <span class="btn-sub">85" Primary Screen</span>
+    </a>
+    <button class="btn btn-both" onclick="openBoth()">
+      <span class="btn-icon">⬡</span>
+      <span class="btn-label">Open Both</span>
+      <span class="btn-sub">Side by side</span>
+    </button>
+  </div>
+
+  <p class="note">
+    <strong>How to use:</strong> Open the Wall Display first, then the Table Screen.
+    Interact with the table — the wall display will respond in real time.
+    Both windows must be open in the same browser.
+  </p>
+
+  <script>
+    function openBoth() {
+      window.open('wall.html', 'wall', 'width=1280,height=720,left=0,top=0');
+      window.open('table.html', 'table', 'width=640,height=480,left=1280,top=0');
+    }
+  </script>
+
+</body>
+</html>

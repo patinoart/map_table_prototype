@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AV4 Map Table — Wall Display</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    #screen-label {
+      position: fixed;
+      top: 8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Category context bar at top */
+    #cat-context {
+      height: 3px;
+      background: var(--border);
+      transition: background 0.4s ease;
+      flex-shrink: 0;
+    }
+
+    #main-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ---- IDLE STATE ---- */
+    #idle-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 60px;
+      text-align: center;
+      transition: opacity 0.5s ease;
+    }
+    #idle-state.hidden { opacity: 0; pointer-events: none; }
+
+    .idle-eyebrow {
+      font-size: clamp(10px, 1.2vw, 14px);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .idle-title {
+      font-family: var(--font-serif);
+      font-size: clamp(32px, 5vw, 72px);
+      color: var(--text-primary);
+      line-height: 1.1;
+      max-width: 900px;
+    }
+
+    .idle-title em {
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    .idle-rule {
+      width: 60px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .idle-desc {
+      font-size: clamp(13px, 1.5vw, 18px);
+      color: var(--text-secondary);
+      max-width: 620px;
+      line-height: 1.7;
+    }
+
+    .idle-prompt {
+      font-size: clamp(10px, 1.1vw, 13px);
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 16px;
+    }
+
+    /* Idle category indicators */
+    .idle-cats {
+      display: flex;
+      gap: 32px;
+      margin-top: 8px;
+    }
+    .idle-cat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(11px, 1.2vw, 14px);
+      color: var(--text-dim);
+    }
+    .idle-cat-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    /* ---- CATEGORY STATE ---- */
+    #cat-state {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px;
+      text-align: center;
+    }
+    #cat-state.visible { display: flex; }
+
+    #cat-state-label {
+      font-size: clamp(11px, 1.3vw, 16px);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    #cat-state-title {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 4.5vw, 64px);
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    #cat-state-desc {
+      font-size: clamp(13px, 1.5vw, 18px);
+      color: var(--text-secondary);
+      max-width: 680px;
+      line-height: 1.7;
+    }
+    #cat-state-prompt {
+      font-size: clamp(10px, 1.1vw, 13px);
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* ---- STORY STATE ---- */
+    #story-state {
+      position: absolute;
+      inset: 0;
+      display: none;
+      grid-template-columns: 1fr 1fr;
+    }
+    #story-state.visible { display: grid; }
+
+    /* Map panel */
+    #story-map-panel {
+      position: relative;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+      background: #0d0b09;
+    }
+
+    #story-map-panel svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Pin spotlight on wall map */
+    #wall-spotlight {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+      width: 200px; height: 200px;
+      transform: translate(-50%, -50%);
+      transition: left 0.6s ease, top 0.6s ease;
+    }
+
+    /* Story text panel */
+    #story-text-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(40px, 6vw, 100px);
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    #story-cat-label {
+      font-size: clamp(10px, 1.2vw, 13px);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    #story-title {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 4vw, 58px);
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    #story-subtitle {
+      font-size: clamp(13px, 1.4vw, 18px);
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    #story-rule {
+      width: 48px;
+      height: 1px;
+      opacity: 0.5;
+    }
+
+    #story-body {
+      font-size: clamp(14px, 1.6vw, 20px);
+      line-height: 1.8;
+      color: var(--text-secondary);
+      max-width: 580px;
+    }
+
+    #story-meta {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .meta-label {
+      font-size: clamp(9px, 0.9vw, 11px);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .meta-value {
+      font-size: clamp(12px, 1.2vw, 15px);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div id="screen-label">Wall Display — 85" Primary Screen</div>
+
+<!-- Color accent bar -->
+<div id="cat-context"></div>
+
+<div id="main-area">
+
+  <!-- IDLE STATE -->
+  <div id="idle-state">
+    <div class="idle-eyebrow">D2 · Shockoe Bottom · Richmond, Virginia</div>
+    <h1 class="idle-title">Slave Traders, Auctioneers,<br>and <em>Jailers</em> in Shockoe Bottom</h1>
+    <div class="idle-rule"></div>
+    <p class="idle-desc">
+      A dense network of slave trading infrastructure defined this neighborhood.
+      Lumpkin's Jail was one of several dozen operations embedded within the
+      everyday fabric of the city—surrounded by homes, churches, schools, and neighborhoods.
+    </p>
+    <div class="idle-cats">
+      <div class="idle-cat-item">
+        <div class="idle-cat-dot" style="background:var(--traders)"></div>
+        Traders &amp; Businesses
+      </div>
+      <div class="idle-cat-item">
+        <div class="idle-cat-dot" style="background:var(--women)"></div>
+        Enslaved Women
+      </div>
+      <div class="idle-cat-item">
+        <div class="idle-cat-dot" style="background:var(--locations)"></div>
+        Locations
+      </div>
+    </div>
+    <div class="idle-prompt">Select a category on the table to begin</div>
+  </div>
+
+  <!-- CATEGORY STATE -->
+  <div id="cat-state">
+    <div id="cat-state-label"></div>
+    <h2 id="cat-state-title"></h2>
+    <p id="cat-state-desc"></p>
+    <div id="cat-state-prompt" class="idle-prompt">Select a location on the map</div>
+  </div>
+
+  <!-- STORY STATE -->
+  <div id="story-state">
+
+    <!-- Left: map context -->
+    <div id="story-map-panel">
+      <svg id="wall-map-svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid slice"
+           xmlns="http://www.w3.org/2000/svg">
+
+        <rect width="800" height="520" fill="#0d0b09"/>
+
+        <!-- Blocks -->
+        <rect class="block" x="60"  y="60"  width="100" height="60"/>
+        <rect class="block" x="170" y="60"  width="100" height="60"/>
+        <rect class="block" x="280" y="60"  width="100" height="60"/>
+        <rect class="block" x="390" y="60"  width="100" height="60"/>
+        <rect class="block" x="500" y="60"  width="100" height="60"/>
+        <rect class="block" x="610" y="60"  width="100" height="60"/>
+        <rect class="block" x="60"  y="140" width="100" height="60"/>
+        <rect class="block" x="170" y="140" width="100" height="60"/>
+        <rect class="block" x="280" y="140" width="100" height="60"/>
+        <rect class="block" x="390" y="140" width="100" height="60"/>
+        <rect class="block" x="500" y="140" width="100" height="60"/>
+        <rect class="block" x="610" y="140" width="100" height="60"/>
+        <rect class="block" x="60"  y="220" width="100" height="60"/>
+        <rect class="block" x="170" y="220" width="100" height="60"/>
+        <rect class="block" x="280" y="220" width="100" height="60"/>
+        <rect class="block" x="390" y="220" width="100" height="60"/>
+        <rect class="block" x="500" y="220" width="100" height="60"/>
+        <rect class="block" x="610" y="220" width="100" height="60"/>
+        <rect class="block" x="60"  y="300" width="100" height="60"/>
+        <rect class="block" x="170" y="300" width="100" height="60"/>
+        <rect class="block" x="280" y="300" width="100" height="60"/>
+        <rect class="block" x="390" y="300" width="100" height="60"/>
+        <rect class="block" x="500" y="300" width="100" height="60"/>
+        <rect class="block" x="610" y="300" width="100" height="60"/>
+
+        <!-- Creek -->
+        <path class="creek"
+          d="M 540 30 Q 500 100 460 180 Q 420 260 390 330 Q 360 390 340 440 Q 320 470 300 520"/>
+
+        <!-- River -->
+        <path d="M 0 490 Q 200 480 400 490 Q 600 500 800 490 L 800 520 L 0 520 Z" class="river"/>
+
+        <!-- Streets -->
+        <line class="street major-street" x1="20" y1="55"  x2="760" y2="55"/>
+        <line class="street" x1="20" y1="130" x2="760" y2="130"/>
+        <line class="street" x1="20" y1="210" x2="760" y2="210"/>
+        <line class="street major-street" x1="20" y1="290" x2="760" y2="290"/>
+        <line class="street" x1="20" y1="370" x2="760" y2="370"/>
+        <line class="street" x1="60"  y1="30" x2="60"  y2="480"/>
+        <line class="street" x1="170" y1="30" x2="170" y2="480"/>
+        <line class="street major-street" x1="280" y1="30" x2="280" y2="480"/>
+        <line class="street major-street" x1="390" y1="30" x2="390" y2="480"/>
+        <line class="street" x1="500" y1="30" x2="500" y2="480"/>
+        <line class="street" x1="610" y1="30" x2="610" y2="480"/>
+        <line class="street" x1="720" y1="30" x2="720" y2="480"/>
+
+        <!-- Street labels (minimal on wall) -->
+        <text class="street-label" x="22" y="51" opacity="0.6">BROAD ST</text>
+        <text class="street-label" x="22" y="286" opacity="0.6">MAIN ST</text>
+        <text class="street-label" x="22" y="366" opacity="0.6">WALL ST</text>
+        <text class="street-label" x="360" y="510" text-anchor="middle" opacity="0.6">JAMES RIVER</text>
+
+        <!-- Active pin marker (injected by JS) -->
+        <g id="wall-pin-layer"></g>
+
+      </svg>
+
+      <!-- Radial spotlight effect -->
+      <div id="wall-spotlight"></div>
+    </div>
+
+    <!-- Right: story content -->
+    <div id="story-text-panel" class="fade-in">
+      <div id="story-cat-label"></div>
+      <h2 id="story-title"></h2>
+      <p id="story-subtitle"></p>
+      <div id="story-rule"></div>
+      <p id="story-body"></p>
+      <div id="story-meta">
+        <div class="meta-item">
+          <span class="meta-label">Location</span>
+          <span class="meta-value" id="story-location"></span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Period</span>
+          <span class="meta-value" id="story-years"></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /story-state -->
+
+</div><!-- /main-area -->
+
+<script src="js/data.js"></script>
+<script src="js/wall.js"></script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AV4 Map Table — Control Screen</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body { display: flex; flex-direction: column; height: 100vh; }
+
+    #screen-label {
+      position: fixed;
+      top: 8px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    #map-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #story-drawer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
+    }
+    #story-drawer.open { transform: translateY(0); }
+
+    #drawer-cat {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    #drawer-title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    #drawer-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    #drawer-body {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      overflow-y: auto;
+      max-height: 100px;
+    }
+    #drawer-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 14px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    #drawer-close:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+    #cat-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .cat-tab.cat-traders { --cat-color: var(--traders); }
+    .cat-tab.cat-women   { --cat-color: var(--women); }
+    .cat-tab.cat-locations { --cat-color: var(--locations); }
+  </style>
+</head>
+<body>
+
+<div id="screen-label">Control Screen — 24–32" Touch Display</div>
+
+<div id="map-area">
+  <svg id="map-svg" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet"
+       xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+
+    <!-- Background -->
+    <rect width="800" height="520" fill="#0f0d0c"/>
+
+    <!-- City blocks (simplified Shockoe Bottom grid) -->
+    <!-- Row 1 blocks (north) -->
+    <rect class="block" x="60"  y="60"  width="100" height="60"/>
+    <rect class="block" x="170" y="60"  width="100" height="60"/>
+    <rect class="block" x="280" y="60"  width="100" height="60"/>
+    <rect class="block" x="390" y="60"  width="100" height="60"/>
+    <rect class="block" x="500" y="60"  width="100" height="60"/>
+    <rect class="block" x="610" y="60"  width="100" height="60"/>
+
+    <!-- Row 2 blocks -->
+    <rect class="block" x="60"  y="140" width="100" height="60"/>
+    <rect class="block" x="170" y="140" width="100" height="60"/>
+    <rect class="block" x="280" y="140" width="100" height="60"/>
+    <rect class="block" x="390" y="140" width="100" height="60"/>
+    <rect class="block" x="500" y="140" width="100" height="60"/>
+    <rect class="block" x="610" y="140" width="100" height="60"/>
+
+    <!-- Row 3 blocks -->
+    <rect class="block" x="60"  y="220" width="100" height="60"/>
+    <rect class="block" x="170" y="220" width="100" height="60"/>
+    <rect class="block" x="280" y="220" width="100" height="60"/>
+    <rect class="block" x="390" y="220" width="100" height="60"/>
+    <rect class="block" x="500" y="220" width="100" height="60"/>
+    <rect class="block" x="610" y="220" width="100" height="60"/>
+
+    <!-- Row 4 blocks (Wall St area) -->
+    <rect class="block" x="60"  y="300" width="100" height="60"/>
+    <rect class="block" x="170" y="300" width="100" height="60"/>
+    <rect class="block" x="280" y="300" width="100" height="60"/>
+    <rect class="block" x="390" y="300" width="100" height="60"/>
+    <rect class="block" x="500" y="300" width="100" height="60"/>
+    <rect class="block" x="610" y="300" width="100" height="60"/>
+
+    <!-- Shockoe Creek (diagonal) -->
+    <path class="creek"
+      d="M 540 30 Q 500 100 460 180 Q 420 260 390 330 Q 360 390 340 440 Q 320 470 300 520"/>
+
+    <!-- James River -->
+    <path d="M 0 490 Q 200 480 400 490 Q 600 500 800 490 L 800 520 L 0 520 Z"
+          class="river"/>
+
+    <!-- East-West Streets -->
+    <!-- Broad St -->
+    <line class="street major-street" x1="20" y1="55"  x2="760" y2="55"/>
+    <!-- Marshall St -->
+    <line class="street" x1="20" y1="130" x2="760" y2="130"/>
+    <!-- Franklin St -->
+    <line class="street" x1="20" y1="210" x2="760" y2="210"/>
+    <!-- Main St -->
+    <line class="street major-street" x1="20" y1="290" x2="760" y2="290"/>
+    <!-- Cary / Wall St -->
+    <line class="street" x1="20" y1="370" x2="760" y2="370"/>
+
+    <!-- North-South Streets -->
+    <!-- 13th St -->
+    <line class="street" x1="60"  y1="30" x2="60"  y2="480"/>
+    <!-- 14th St -->
+    <line class="street" x1="170" y1="30" x2="170" y2="480"/>
+    <!-- 15th St -->
+    <line class="street major-street" x1="280" y1="30" x2="280" y2="480"/>
+    <!-- 16th St -->
+    <line class="street major-street" x1="390" y1="30" x2="390" y2="480"/>
+    <!-- 17th St -->
+    <line class="street" x1="500" y1="30" x2="500" y2="480"/>
+    <!-- 18th St -->
+    <line class="street" x1="610" y1="30" x2="610" y2="480"/>
+    <!-- 19th St -->
+    <line class="street" x1="720" y1="30" x2="720" y2="480"/>
+
+    <!-- Street Labels -->
+    <text class="street-label" x="22" y="51">BROAD ST</text>
+    <text class="street-label" x="22" y="126">MARSHALL ST</text>
+    <text class="street-label" x="22" y="206">FRANKLIN ST</text>
+    <text class="street-label" x="22" y="286">MAIN ST</text>
+    <text class="street-label" x="22" y="366">WALL ST / CARY ST</text>
+
+    <text class="street-label" x="55"  y="26">13TH</text>
+    <text class="street-label" x="165" y="26">14TH</text>
+    <text class="street-label" x="275" y="26">15TH</text>
+    <text class="street-label" x="385" y="26">16TH</text>
+    <text class="street-label" x="495" y="26">17TH</text>
+    <text class="street-label" x="605" y="26">18TH</text>
+    <text class="street-label" x="715" y="26">19TH</text>
+
+    <!-- River label -->
+    <text class="street-label" x="360" y="510" text-anchor="middle">JAMES RIVER</text>
+
+    <!-- Creek label -->
+    <text class="street-label" x="458" y="120" transform="rotate(-55, 458, 120)">SHOCKOE CREEK</text>
+
+    <!-- PIN LAYER — injected by JS -->
+    <g id="pin-layer"></g>
+
+  </svg>
+
+  <!-- Story drawer -->
+  <div id="story-drawer">
+    <button id="drawer-close">✕</button>
+    <div id="drawer-cat"></div>
+    <div id="drawer-title"></div>
+    <div id="drawer-subtitle"></div>
+    <div id="drawer-body"></div>
+  </div>
+</div>
+
+<!-- Category selector bar -->
+<div id="cat-bar">
+  <button class="cat-tab cat-traders"   data-cat="traders"   onclick="selectCategory('traders')">
+    <span class="tab-dot"></span>Traders &amp; Businesses
+  </button>
+  <button class="cat-tab cat-women"     data-cat="women"     onclick="selectCategory('women')">
+    <span class="tab-dot"></span>Enslaved Women
+  </button>
+  <button class="cat-tab cat-locations" data-cat="locations" onclick="selectCategory('locations')">
+    <span class="tab-dot"></span>Locations
+  </button>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/table.js"></script>
+</body>
+</html>
